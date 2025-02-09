@@ -1,10 +1,16 @@
-import NextAuth from "next-auth";
-import { cache } from "react";
+import { betterAuth } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { db } from "@/server/db"; // your drizzle instance
+import { env } from "@/env";
 
-import { authConfig } from "./config";
-
-const { auth: uncachedAuth, handlers, signIn, signOut } = NextAuth(authConfig);
-
-const auth = cache(uncachedAuth);
-
-export { auth, handlers, signIn, signOut };
+export const auth = betterAuth({
+  database: drizzleAdapter(db, {
+    provider: "pg", // or "mysql", "sqlite"
+  }),
+  socialProviders: {
+    discord: {
+      clientId: env.AUTH_DISCORD_ID,
+      clientSecret: env.AUTH_DISCORD_SECRET,
+    },
+  },
+});
